@@ -1,0 +1,7 @@
+// Copie este arquivo para Local.xcconfig e preencha com os seus valores.
+// DEVELOPMENT_TEAM: Team ID da sua conta Apple (Xcode > Settings > Accounts)
+// META_APP_ID / CLIENT_TOKEN: do seu app iOS no Wearables Developer Center
+//   (https://wearables.developer.meta.com > seu projeto > aba iOS)
+DEVELOPMENT_TEAM = SEU_TEAM_ID
+META_APP_ID = 0
+CLIENT_TOKEN = 0
