@@ -76,7 +76,7 @@ Key design points:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/conect2ai/REPO-NAME.git   # TODO: final repository URL
+git clone https://github.com/conect2ai/WPMC-2026-Glasses2Car.git
 cd REPO-NAME
 ```
 
