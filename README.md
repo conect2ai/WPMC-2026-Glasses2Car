@@ -8,17 +8,15 @@
 ![Meta%20DAT](https://img.shields.io/badge/Meta%20Wearables%20DAT-0.8.0-8A2BE2)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 
-<!-- TODO: adjust title -->
-# Title
+# Edge AI Smart Glasses Interface for Driver Experience
 
-<!-- TODO: adjust authors -->
 ### Authors: [Alice Freire](https://github.com/alicefvictorino), [Morsinaldo Medeiros](https://github.com/Morsinaldo), [Erick Justino](https://github.com/erickjustino), [Hilton Machado](https://github.com/HiltonThallyson), [Marianne Silva](https://github.com/MarianneDiniz) and [Ivanovitch Silva](https://github.com/ivanovitchm)
 
 ## Abstract
 
-<!-- TODO: adjust abstract -->
+The growing integration of sensing, communication, and computing capabilities is transforming connected vehicles into mobile IoT platforms that continuously generate information about vehicle operation and driving conditions. While these data enable intelligent, context-aware services, delivering timely access to such information through hands-free, eyes-free interaction remains a challenge. This work presents a wearable–mobile IoT architecture that uses smart glasses as a hands-free interface to vehicle-generated information. The system integrates Ray-Ban Meta smart glasses, smartphone-based processing, OBD-II vehicular sensing, and platform services, enabling voice interaction concurrently with continuous telemetry acquisition and transmission. The architecture was evaluated under real-world driving conditions through 22 voice interactions involving driving-behavior, emission, and trip-summary queries. For queries performed during driving, median Time to First Audio (TTFA) was 440 ms for driving-behavior feedback and 390 ms for emission information. Smart-glass interactions introduced approximately 24.1 KiB of additional traffic, corresponding to about 5% of the vehicular telemetry volume, while the mobile application required approximately 29 MB of memory and a median CPU utilization of 0.7% of one core. The results provide experimental evidence of the feasibility of smart glasses as a responsive and lightweight human–IoT interface for real-time access to connected-vehicle information.
 
-**Index Terms** — 
+**Index Terms** — Smart Glasses, IoT, Edge Computing, Connected Vehicles, Wearable Computing, Human–IoT Interaction.
 
 ## Overview
 
@@ -123,6 +121,43 @@ jupyter notebook analysis/analise_smartglass.ipynb
 ```
 
 The notebook is fully deterministic given `data/`: it reconstructs request positions from the telemetry (the paper documents why), regenerates every figure used in the manuscript, and prints the median [IQR] latency table exactly as reported.
+
+## Results
+
+All results below are computed by `analysis/smartglass_analysis.ipynb` from the raw data in `data/` — re-running the notebook regenerates every figure and number. In total, **22 voice interactions** were analyzed (12 driving-behavior, 8 emission, and 2 trip-summary queries), all successfully answered through the glasses while App2Car streamed telemetry in parallel.
+
+### Latency
+
+Latency per request type, as median [interquartile range]; the two trip-summary requests are reported individually due to the small sample:
+
+| Request | n | ASR (ms) | API (ms) | TTFA (ms) |
+|---|---|---|---|---|
+| How am I driving? | 12 | 2077 [2030–2242] | 434 [394–471] | 440 [399–478] |
+| How am I emitting? | 8 | 2173 [2141–2370] | 385 [362–528] | 390 [371–536] |
+| Trip summary | 2 | 1689 / 1704 | 6508 / 8317 | 6514 / 8327 |
+
+Once the spoken command is recognized, the answer starts sounding in **under half a second** (median Time to First Audio of 440 ms and 390 ms) for the two queries intended for use while driving. The stage breakdown below shows that, after command recognition, the API round trip accounts for most of that wait — text formatting and TTS initialization are negligible — and that the trip-summary latency is dominated by its broader server-side scope (session aggregation and trip finalization):
+
+<p align="center">
+  <img width="700" src="./analysis/latency_breakdown.png" alt="Median stage breakdown per request type" />
+</p>
+
+A single outlier API event (~3.8 s, *How am I driving?*) was observed, an order of magnitude above that query's IQR — the reason medians and IQRs are reported instead of means.
+
+### Interactions along the route
+
+The 22 requests were issued while the vehicle was in motion around the UFRN ring road, with positions reconstructed from the concurrent vehicle telemetry (● = request sent, ✕ = response received; browsable versions in `analysis/interactive_map_trip{1,2}.html`):
+
+<p align="center">
+  <img width="800" src="./analysis/request_map.png" alt="Route and interaction locations for the two trips" />
+</p>
+
+### Communication and resource overhead
+
+- **Traffic:** ~16.1 KiB of estimated outgoing traffic and 8.0 KiB of measured response payloads across all 22 requests — **≈5%** of the ~475 KiB (1312 samples, ~371 B/sample) transmitted in parallel by the App2Car telemetry stream during the same sessions;
+- **Smartphone footprint (process-scoped, Glasses2Car only):** median CPU of **0.7% of one core** (range 0.4–1.4%; ≈0.1% of the A18 Pro's six-core aggregate) and a stable **≈29 MB** memory footprint (28.7–29.1 MB across both sessions, no growth over time);
+- **Device-wide indicators:** the iPhone remained in the *nominal* thermal state throughout, and the battery level stayed at 100% during both ~10-minute sessions (device not connected to power) — no drain observable at the 1% resolution reported by iOS;
+- The Meta Wearables Device Access Toolkit exposes no CPU/memory/battery measurements for the glasses themselves; only their thermal state is available (no thermal buildup was observed).
 
 ## License
 
